@@ -151,9 +151,9 @@ dependencies = [
 
 [[package]]
 name = "traitgraph"
-version = "0.7.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "27f62d79568b92a08597725d326d351f5c0830c6b166b139511bc689bc3b768d"
+checksum = "cf62128e830b5280aede16dfedd4ccca7d59bef5fc5e8e3fbd42c5134c821762"
 dependencies = [
  "bitvector",
  "num-traits",
@@ -163,9 +163,9 @@ dependencies = [
 
 [[package]]
 name = "traitsequence"
-version = "0.6.0"
+version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "0fc72819501e9c4430514249c67906b22235a0eb2ab30bf4ffebfdd69f32df3f"
+checksum = "21695cbcb01adde5f4b5e39be180ac583878a108314ed8877fe158d58ed770a1"
 
 [[package]]
 name = "unicode-segmentation"
