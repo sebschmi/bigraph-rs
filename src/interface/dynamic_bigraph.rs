@@ -139,12 +139,12 @@ mod tests {
     use crate::interface::{
         static_bigraph::StaticBigraph, static_bigraph::StaticBigraphFromDigraph, BidirectedData,
     };
-    use crate::traitgraph::implementation::petgraph_impl;
     use crate::traitgraph::interface::{ImmutableGraphContainer, MutableGraphContainer};
+    use traitgraph::implementation::petgraph_impl::PetGraph;
 
     #[test]
     fn test_bigraph_add_node_centric_mirror_edges() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         #[derive(Eq, PartialEq, Debug, Hash, Clone)]
         struct NodeData(u32);
         impl BidirectedData for NodeData {
@@ -182,7 +182,7 @@ mod tests {
 
     #[test]
     fn test_bigraph_add_edge_centric_mirror_edges() {
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         #[derive(Eq, PartialEq, Debug, Hash, Clone)]
         struct NodeData(u32);
         impl BidirectedData for NodeData {

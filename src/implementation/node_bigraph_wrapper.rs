@@ -33,10 +33,10 @@ pub type PetBigraph<NodeData, EdgeData> =
 /// The binode mapping function then associates the parts with each other.
 ///
 /// ```rust
+/// use traitgraph::implementation::petgraph_impl::PetGraph;
 /// use bigraph::implementation::node_bigraph_wrapper::NodeBigraphWrapper;
 /// use bigraph::interface::static_bigraph::{StaticBigraph, StaticBigraphFromDigraph};
 /// use bigraph::traitgraph::interface::MutableGraphContainer;
-/// use bigraph::traitgraph::implementation::petgraph_impl;
 /// use bigraph::interface::BidirectedData;
 ///
 /// #[derive(Clone, Eq, PartialEq, Hash, Debug)]
@@ -47,7 +47,7 @@ pub type PetBigraph<NodeData, EdgeData> =
 ///     }
 /// }
 ///
-/// let mut graph = petgraph_impl::new();
+/// let mut graph = PetGraph::new();
 /// let n1 = graph.add_node(NodeData(0));
 /// let n2 = graph.add_node(NodeData(1000));
 /// graph.add_edge(n1.clone(), n2.clone(), ());
@@ -230,7 +230,65 @@ impl<Topology: MutableGraphContainer + StaticGraph> MutableGraphContainer
     }
 
     fn remove_node(&mut self, node_id: Self::NodeIndex) -> Option<Self::NodeData> {
+        if let Some(mirror_node_id) = self.mirror_node(node_id) {
+            self.binode_map[mirror_node_id.as_usize()] = Self::OptionalNodeIndex::new_none();
+        }
+
+        self.binode_map.remove(node_id.as_usize());
+        for mirror_node_id in &mut self.binode_map {
+            if let Some(mirror_node_usize) = mirror_node_id.as_usize() {
+                assert_ne!(mirror_node_usize, node_id.as_usize());
+                if mirror_node_usize > node_id.as_usize() {
+                    *mirror_node_id = (mirror_node_usize - 1).into();
+                }
+            }
+        }
+
         self.topology.remove_node(node_id)
+    }
+
+    fn remove_nodes_sorted_slice(&mut self, node_ids: &[Self::NodeIndex]) {
+        debug_assert!(node_ids.windows(2).all(|w| w[0] < w[1]));
+        let mut decrement_map = Vec::new();
+        for (index, &node_id) in node_ids.iter().enumerate() {
+            // build map to decrement mirror nodes by the right amount
+            while decrement_map.len() < node_id.as_usize() {
+                decrement_map.push(index);
+            }
+
+            // remove mirror references of deleted nodes
+            if let Some(mirror_node_id) = self.mirror_node(node_id) {
+                self.binode_map[mirror_node_id.as_usize()] = Self::OptionalNodeIndex::new_none();
+            }
+        }
+
+        while decrement_map.len() < self.binode_map.len() {
+            decrement_map.push(node_ids.len());
+        }
+
+        // decrement mirror nodes to match new node indices
+        let mut index = 0;
+        for node_id in 0..self.binode_map.len() {
+            if let Some(remove_node_id) = node_ids.get(index) {
+                if remove_node_id.as_usize() == node_id {
+                    index += 1;
+                    continue;
+                }
+            }
+
+            let binode_id = self.binode_map[node_id]
+                .as_usize()
+                .map(|binode_id_usize| binode_id_usize - decrement_map[binode_id_usize])
+                .into();
+
+            self.binode_map[node_id - index] = binode_id;
+        }
+        self.binode_map.resize(
+            self.binode_map.len() - node_ids.len(),
+            Option::<usize>::None.into(),
+        );
+
+        self.topology.remove_nodes_sorted_slice(node_ids)
     }
 
     fn remove_edge(&mut self, edge_id: Self::EdgeIndex) -> Option<Self::EdgeData> {
@@ -297,15 +355,24 @@ impl<Topology: DynamicGraph> DynamicEdgeCentricBigraph for NodeBigraphWrapper<To
 {
 }
 
+impl<Topology: GraphBase + PartialEq> PartialEq for NodeBigraphWrapper<Topology> {
+    fn eq(&self, other: &Self) -> bool {
+        self.topology == other.topology && self.binode_map == other.binode_map
+    }
+}
+
+impl<Topology: GraphBase + Eq> Eq for NodeBigraphWrapper<Topology> {}
+
 #[cfg(test)]
 mod tests {
     use super::NodeBigraphWrapper;
-    use crate::interface::dynamic_bigraph::DynamicNodeCentricBigraph;
+    use crate::interface::dynamic_bigraph::{DynamicBigraph, DynamicNodeCentricBigraph};
+    use crate::interface::static_bigraph::StaticEdgeCentricBigraph;
     use crate::interface::{
         static_bigraph::StaticBigraph, static_bigraph::StaticBigraphFromDigraph, BidirectedData,
     };
-    use crate::traitgraph::implementation::petgraph_impl;
     use crate::traitgraph::interface::{ImmutableGraphContainer, MutableGraphContainer};
+    use traitgraph::implementation::petgraph_impl::PetGraph;
     use traitgraph::index::OptionalGraphIndex;
 
     #[test]
@@ -322,7 +389,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         let n3 = graph.add_node(NodeData(2));
@@ -351,7 +418,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -378,7 +445,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -405,7 +472,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -432,7 +499,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -457,7 +524,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         let n3 = graph.add_node(NodeData(2));
@@ -485,7 +552,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         let n3 = graph.add_node(NodeData(2));
@@ -518,7 +585,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -545,7 +612,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         graph.add_node(NodeData(4));
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
@@ -572,7 +639,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -599,7 +666,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -624,7 +691,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -649,7 +716,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -676,7 +743,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -703,7 +770,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -726,7 +793,7 @@ mod tests {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n0 = graph.add_node(NodeData(0));
         let n1 = graph.add_node(NodeData(1));
         graph.add_node(NodeData(2));
@@ -738,5 +805,113 @@ mod tests {
         graph.add_mirror_nodes();
         debug_assert!(graph.verify_node_pairing());
         debug_assert_eq!(graph.node_count(), 8);
+    }
+
+    #[test]
+    fn test_bigraph_remove_node() {
+        #[derive(Eq, PartialEq, Debug, Hash, Clone)]
+        struct NodeData(u32);
+        impl BidirectedData for NodeData {
+            fn mirror(&self) -> Self {
+                Self(1000 - self.0)
+            }
+        }
+
+        let mut graph = NodeBigraphWrapper::new(PetGraph::new());
+        let n0 = graph.add_node(NodeData(0));
+        let n1 = graph.add_node(NodeData(1000));
+        graph.set_mirror_nodes(n0, n1);
+        let n2 = graph.add_node(NodeData(1));
+        let n3 = graph.add_node(NodeData(999));
+        graph.set_mirror_nodes(n2, n3);
+        let _e0 = graph.add_edge(n0, n2, ());
+        let _e1 = graph.add_edge(n3, n1, ());
+
+        assert!(graph.verify_node_pairing());
+        assert!(graph.verify_edge_mirror_property());
+
+        graph.remove_node(n0);
+
+        assert_eq!(graph.edge_count(), 1);
+        assert_eq!(graph.mirror_node(n0), None);
+        assert_eq!(graph.mirror_node(n1), Some(n2));
+        assert_eq!(graph.mirror_node(n2), Some(n1));
+
+        graph.remove_node(n0);
+
+        assert!(graph.verify_node_pairing());
+        assert!(graph.verify_edge_mirror_property());
+        assert_eq!(graph.edge_count(), 0);
+        assert_eq!(graph.mirror_node(n0), Some(n1));
+        assert_eq!(graph.mirror_node(n1), Some(n0));
+    }
+
+    #[test]
+    fn test_bigraph_remove_nodes() {
+        #[derive(Eq, PartialEq, Debug, Hash, Clone)]
+        struct NodeData(u32);
+        impl BidirectedData for NodeData {
+            fn mirror(&self) -> Self {
+                Self(1000 - self.0)
+            }
+        }
+
+        let mut graph = NodeBigraphWrapper::new(PetGraph::new());
+        for i in 0..100 {
+            graph.add_node(NodeData(i));
+        }
+        graph.add_mirror_nodes();
+
+        fn random(n: usize) -> usize {
+            // hopefully results in a distribution of edges that covers all possible edge cases
+            n.wrapping_mul(31)
+                .wrapping_add(n.wrapping_mul(97))
+                .wrapping_add(n / 31)
+                .wrapping_add(n / 97)
+                .wrapping_add(n)
+                .wrapping_add(n.count_zeros() as usize)
+        }
+
+        let mut n = 0;
+        while graph.edge_count() < 250 {
+            let n1 = (n % graph.node_count()).into();
+            n = random(n);
+            let n2 = (n % graph.node_count()).into();
+            n = random(n);
+
+            if !graph.contains_edge_between(n1, n2) {
+                graph.add_edge(n1, n2, ());
+            }
+        }
+        graph.add_node_centric_mirror_edges();
+
+        let mut g1 = graph.clone();
+        let mut g2 = graph.clone();
+        let remove: Vec<_> = [
+            0, 1, 2, 5, 7, 24, 35, 36, 37, 38, 39, 40, 77, 88, 99, 100, 101, 102, 133, 134, 135,
+            136, 188, 199,
+        ]
+        .into_iter()
+        .map(Into::into)
+        .collect();
+        g1.remove_nodes_sorted_slice(&remove);
+        for n in remove.into_iter().rev() {
+            g2.remove_node(n);
+        }
+        assert!(g1.eq(&g2), "g1: {:?}\ng2: {:?}", g1, g2);
+
+        let mut g1 = graph.clone();
+        let mut g2 = graph.clone();
+        let remove: Vec<_> = [
+            2, 5, 7, 24, 35, 36, 37, 38, 39, 40, 77, 88, 99, 100, 101, 102,
+        ]
+        .into_iter()
+        .map(Into::into)
+        .collect();
+        g1.remove_nodes_sorted_slice(&remove);
+        for n in remove.into_iter().rev() {
+            g2.remove_node(n);
+        }
+        assert!(g1.eq(&g2), "g1: {:?}\ng2: {:?}", g1, g2);
     }
 }

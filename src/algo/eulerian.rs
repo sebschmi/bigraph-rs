@@ -206,11 +206,11 @@ mod tests {
     use crate::interface::dynamic_bigraph::DynamicBigraph;
     use crate::interface::static_bigraph::StaticBigraphFromDigraph;
     use crate::traitgraph::interface::MutableGraphContainer;
-    use traitgraph::implementation::petgraph_impl;
+    use traitgraph::implementation::petgraph_impl::PetGraph;
 
     #[test]
     fn test_bidirected_eulerian_cycle_triangle() {
-        let mut bigraph = NodeBigraphWrapper::new(petgraph_impl::new());
+        let mut bigraph = NodeBigraphWrapper::new(PetGraph::new());
         let n1 = bigraph.add_node(());
         let n2 = bigraph.add_node(());
         bigraph.set_mirror_nodes(n1, n2);
@@ -234,7 +234,7 @@ mod tests {
 
     #[test]
     fn test_bidirected_eulerian_cycle_figure_eight() {
-        let mut bigraph = NodeBigraphWrapper::new(petgraph_impl::new());
+        let mut bigraph = NodeBigraphWrapper::new(PetGraph::new());
         let n1 = bigraph.add_node(());
         let n2 = bigraph.add_node(());
         bigraph.set_mirror_nodes(n1, n2);

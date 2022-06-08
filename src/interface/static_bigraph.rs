@@ -310,7 +310,7 @@ mod test {
     use crate::interface::static_bigraph::StaticEdgeCentricBigraph;
     use crate::interface::static_bigraph::StaticNodeCentricBigraph;
     use crate::interface::BidirectedData;
-    use crate::traitgraph::implementation::petgraph_impl;
+    use traitgraph::implementation::petgraph_impl::PetGraph;
     use traitgraph::interface::ImmutableGraphContainer;
     use traitgraph::interface::MutableGraphContainer;
 
@@ -337,7 +337,7 @@ mod test {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         let n3 = graph.add_node(NodeData(2));
@@ -365,7 +365,7 @@ mod test {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         let n3 = graph.add_node(NodeData(2));
@@ -392,7 +392,7 @@ mod test {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         let n3 = graph.add_node(NodeData(2));
@@ -429,7 +429,7 @@ mod test {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         let n3 = graph.add_node(NodeData(2));
@@ -457,7 +457,7 @@ mod test {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         let n3 = graph.add_node(NodeData(2));
@@ -485,7 +485,7 @@ mod test {
             }
         }
 
-        let mut graph = petgraph_impl::new();
+        let mut graph = PetGraph::new();
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1));
         let n3 = graph.add_node(NodeData(2));
@@ -518,7 +518,7 @@ mod test {
             }
         }
 
-        let mut graph = NodeBigraphWrapper::new(petgraph_impl::new());
+        let mut graph = NodeBigraphWrapper::new(PetGraph::new());
         let n1 = graph.add_node(NodeData(0));
         let n2 = graph.add_node(NodeData(1000));
         let n3 = graph.add_node(NodeData(500));
