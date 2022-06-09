@@ -17,7 +17,4 @@ rust-version = "1.58.1"
 
 [dependencies]
 traitgraph = "2.0.0"
-opaque_typedef = "0.0.5"
-opaque_typedef_macros = "0.0.5"
-num-traits = "0.2.14"
 bitvector = "0.1.5"
