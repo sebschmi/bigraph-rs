@@ -20,11 +20,7 @@ use traitgraph::interface::{
 /// Represent arbitrary bigraphs with petgraph.
 pub type PetBigraph<NodeData, EdgeData> =
     crate::implementation::node_bigraph_wrapper::NodeBigraphWrapper<
-        crate::traitgraph::implementation::petgraph_impl::petgraph::graph::DiGraph<
-            NodeData,
-            EdgeData,
-            usize,
-        >,
+        crate::traitgraph::implementation::petgraph_impl::PetGraph<NodeData, EdgeData>,
     >;
 
 /// Wrapper for a static graph that adds a mirror node mapping function.
@@ -63,7 +59,7 @@ pub struct NodeBigraphWrapper<Topology: GraphBase> {
     binode_map: Vec<Topology::OptionalNodeIndex>,
 }
 
-impl<'a, Topology: GraphBase> GraphBase for NodeBigraphWrapper<Topology> {
+impl<Topology: GraphBase> GraphBase for NodeBigraphWrapper<Topology> {
     type NodeData = Topology::NodeData;
     type EdgeData = Topology::EdgeData;
     type OptionalNodeIndex = Topology::OptionalNodeIndex;
