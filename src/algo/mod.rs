@@ -8,6 +8,8 @@ use std::fmt::Write;
 pub mod eulerian;
 /// Algorithms related to covering a bigraph with biwalks.
 pub mod walk_cover;
+/// Algorithms related to bidirected weakly connected components.
+pub mod weakly_connected_components;
 
 fn bitvector_to_index_string(bitvector: &BitVector) -> String {
     let mut result = String::new();
