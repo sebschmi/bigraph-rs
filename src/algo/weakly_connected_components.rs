@@ -11,13 +11,9 @@ use traitgraph_algo::traversal::PreOrderUndirectedBfs;
 /// If the graph is empty, no WCCs are returned.
 /// Otherwise, an array is returned that maps each node to a root node representing its WCC.
 /// Node that if the node ids are not consecutive, this mapping is still returned as consecutive array.
-pub fn decompose_weakly_connected_components<Graph: Default + StaticBigraph>(
+pub fn decompose_weakly_connected_components<Graph: StaticBigraph>(
     graph: &Graph,
-) -> Vec<Graph::NodeIndex>
-where
-    Graph::NodeData: Clone,
-    Graph::EdgeData: Clone,
-{
+) -> Vec<Graph::NodeIndex> {
     let mut result: Vec<_> = graph.node_indices().collect();
     let mut visited = vec![false; graph.node_count()];
     let mut bfs = PreOrderUndirectedBfs::new_without_start(graph);
