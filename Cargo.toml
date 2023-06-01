@@ -3,7 +3,7 @@ name = "bigraph"
 description = "Different representations with implemented operations on bigraphs"
 categories = ["data-structures", "mathematics", "science"]
 keywords = ["bigraph", "graph", "bidirected", "abstract", "implementation"]
-version = "2.1.1"
+version = "3.0.0"
 authors = ["Sebastian Schmidt <isibboi@gmail.com>"]
 edition = "2021"
 homepage = "https://github.com/sebschmi/bigraph-rs"
@@ -11,7 +11,7 @@ documentation = "https://docs.rs/bigraph"
 repository = "https://github.com/sebschmi/bigraph-rs"
 readme = "README.md"
 license = "BSD-2-Clause"
-rust-version = "1.58.1"
+rust-version = "1.65.0"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
