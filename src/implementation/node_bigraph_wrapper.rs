@@ -157,6 +157,8 @@ impl<Topology: DynamicGraph> DynamicBigraph for NodeBigraphWrapper<Topology> {
 impl<Topology: ImmutableGraphContainer> ImmutableGraphContainer for NodeBigraphWrapper<Topology> {
     type NodeIndices<'a> = Topology::NodeIndices<'a> where Self: 'a;
     type EdgeIndices<'a> = Topology::EdgeIndices<'a> where Self: 'a;
+    type NodeIndicesCopied = Topology::NodeIndicesCopied;
+    type EdgeIndicesCopied = Topology::EdgeIndicesCopied;
 
     fn node_indices(&self) -> Self::NodeIndices<'_> {
         self.topology.node_indices()
@@ -164,6 +166,14 @@ impl<Topology: ImmutableGraphContainer> ImmutableGraphContainer for NodeBigraphW
 
     fn edge_indices(&self) -> Self::EdgeIndices<'_> {
         self.topology.edge_indices()
+    }
+
+    fn node_indices_copied(&self) -> Self::NodeIndicesCopied {
+        self.topology.node_indices_copied()
+    }
+
+    fn edge_indices_copied(&self) -> Self::EdgeIndicesCopied {
+        self.topology.edge_indices_copied()
     }
 
     fn contains_node_index(&self, node_index: Self::NodeIndex) -> bool {
@@ -198,17 +208,6 @@ impl<Topology: ImmutableGraphContainer> ImmutableGraphContainer for NodeBigraphW
 impl<Topology: MutableGraphContainer + StaticGraph> MutableGraphContainer
     for NodeBigraphWrapper<Topology>
 {
-    type NodeIndicesMut = Topology::NodeIndicesMut;
-    type EdgeIndicesMut = Topology::EdgeIndicesMut;
-
-    fn node_indices_copied(&self) -> Self::NodeIndicesMut {
-        self.topology.node_indices_copied()
-    }
-
-    fn edge_indices_copied(&self) -> Self::EdgeIndicesMut {
-        self.topology.edge_indices_copied()
-    }
-
     fn node_data_mut(&mut self, node_id: Self::NodeIndex) -> &mut Self::NodeData {
         self.topology.node_data_mut(node_id)
     }
