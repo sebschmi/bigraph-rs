@@ -11,7 +11,7 @@ use crate::interface::{
 use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
-use traitgraph::index::{GraphIndex, GraphIndices, OptionalGraphIndex};
+use traitgraph::index::{GraphIndex, OptionalGraphIndex};
 use traitgraph::interface::{
     DynamicGraph, Edge, GraphBase, ImmutableGraphContainer, MutableGraphContainer, NavigableGraph,
     StaticGraph,
@@ -155,11 +155,14 @@ impl<Topology: DynamicGraph> DynamicBigraph for NodeBigraphWrapper<Topology> {
 }
 
 impl<Topology: ImmutableGraphContainer> ImmutableGraphContainer for NodeBigraphWrapper<Topology> {
-    fn node_indices(&self) -> GraphIndices<Self::NodeIndex, Self::OptionalNodeIndex> {
+    type NodeIndices<'a> = Topology::NodeIndices<'a> where Self: 'a;
+    type EdgeIndices<'a> = Topology::EdgeIndices<'a> where Self: 'a;
+
+    fn node_indices(&self) -> Self::NodeIndices<'_> {
         self.topology.node_indices()
     }
 
-    fn edge_indices(&self) -> GraphIndices<Self::EdgeIndex, Self::OptionalEdgeIndex> {
+    fn edge_indices(&self) -> Self::EdgeIndices<'_> {
         self.topology.edge_indices()
     }
 
@@ -187,22 +190,6 @@ impl<Topology: ImmutableGraphContainer> ImmutableGraphContainer for NodeBigraphW
         self.topology.edge_data(edge_id)
     }
 
-    fn node_data_mut(&mut self, node_id: Self::NodeIndex) -> &mut Self::NodeData {
-        self.topology.node_data_mut(node_id)
-    }
-
-    fn edge_data_mut(&mut self, edge_id: Self::EdgeIndex) -> &mut Self::EdgeData {
-        self.topology.edge_data_mut(edge_id)
-    }
-
-    fn contains_edge_between(&self, from: Self::NodeIndex, to: Self::NodeIndex) -> bool {
-        self.topology.contains_edge_between(from, to)
-    }
-
-    fn edge_count_between(&self, from: Self::NodeIndex, to: Self::NodeIndex) -> usize {
-        self.topology.edge_count_between(from, to)
-    }
-
     fn edge_endpoints(&self, edge_id: Self::EdgeIndex) -> Edge<Self::NodeIndex> {
         self.topology.edge_endpoints(edge_id)
     }
@@ -211,6 +198,25 @@ impl<Topology: ImmutableGraphContainer> ImmutableGraphContainer for NodeBigraphW
 impl<Topology: MutableGraphContainer + StaticGraph> MutableGraphContainer
     for NodeBigraphWrapper<Topology>
 {
+    type NodeIndicesMut = Topology::NodeIndicesMut;
+    type EdgeIndicesMut = Topology::EdgeIndicesMut;
+
+    fn node_indices_copied(&self) -> Self::NodeIndicesMut {
+        self.topology.node_indices_copied()
+    }
+
+    fn edge_indices_copied(&self) -> Self::EdgeIndicesMut {
+        self.topology.edge_indices_copied()
+    }
+
+    fn node_data_mut(&mut self, node_id: Self::NodeIndex) -> &mut Self::NodeData {
+        self.topology.node_data_mut(node_id)
+    }
+
+    fn edge_data_mut(&mut self, edge_id: Self::EdgeIndex) -> &mut Self::EdgeData {
+        self.topology.edge_data_mut(edge_id)
+    }
+
     fn add_node(&mut self, node_data: Self::NodeData) -> Self::NodeIndex {
         self.binode_map.push(Self::OptionalNodeIndex::new_none());
         self.topology.add_node(node_data)
@@ -370,6 +376,7 @@ mod tests {
     use crate::traitgraph::interface::{ImmutableGraphContainer, MutableGraphContainer};
     use traitgraph::implementation::petgraph_impl::PetGraph;
     use traitgraph::index::OptionalGraphIndex;
+    use traitgraph::interface::NavigableGraph;
 
     #[test]
     fn test_bigraph_creation() {

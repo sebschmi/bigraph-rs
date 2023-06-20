@@ -23,7 +23,7 @@ where
      * The indices of existing nodes are not altered.
      */
     fn add_mirror_nodes(&mut self) {
-        for node_id in self.node_indices() {
+        for node_id in self.node_indices_copied() {
             if self.mirror_node(node_id).is_none() {
                 let mirror_index = self.add_node(self.node_data(node_id).mirror());
                 self.set_mirror_nodes(node_id, mirror_index);
