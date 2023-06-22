@@ -3,7 +3,7 @@ name = "bigraph"
 description = "Different representations with implemented operations on bigraphs"
 categories = ["data-structures", "mathematics", "science"]
 keywords = ["bigraph", "graph", "bidirected", "abstract", "implementation"]
-version = "4.0.0-alpha.4"
+version = "4.0.0-alpha.5"
 authors = ["Sebastian Schmidt <isibboi@gmail.com>"]
 edition = "2021"
 homepage = "https://github.com/sebschmi/bigraph-rs"
@@ -16,6 +16,6 @@ rust-version = "1.65.0"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-traitgraph = "4.0.0-alpha.5"
-traitgraph-algo = "7.0.0-alpha.4"
+traitgraph = "4.0.0-alpha.6"
+traitgraph-algo = "7.0.0-alpha.5"
 bitvector = "0.1.5"
