@@ -12,6 +12,7 @@ use std::collections::HashMap;
 use std::fmt::Debug;
 use std::hash::Hash;
 use traitgraph::index::{GraphIndex, OptionalGraphIndex};
+use traitgraph::interface::subgraph::SubgraphBase;
 use traitgraph::interface::{
     DynamicGraph, Edge, GraphBase, ImmutableGraphContainer, MutableGraphContainer, NavigableGraph,
     StaticGraph,
@@ -325,6 +326,14 @@ impl<Topology: NavigableGraph> NavigableGraph for NodeBigraphWrapper<Topology> {
         to_node_id: Self::NodeIndex,
     ) -> Self::EdgesBetween<'_> {
         self.topology.edges_between(from_node_id, to_node_id)
+    }
+}
+
+impl<Topology: SubgraphBase> SubgraphBase for NodeBigraphWrapper<Topology> {
+    type RootGraph = Self;
+
+    fn root(&self) -> &Self::RootGraph {
+        self
     }
 }
 
