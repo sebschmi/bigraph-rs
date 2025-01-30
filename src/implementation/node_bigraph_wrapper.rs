@@ -156,8 +156,14 @@ impl<Topology: DynamicGraph> DynamicBigraph for NodeBigraphWrapper<Topology> {
 }
 
 impl<Topology: ImmutableGraphContainer> ImmutableGraphContainer for NodeBigraphWrapper<Topology> {
-    type NodeIndices<'a> = Topology::NodeIndices<'a> where Self: 'a;
-    type EdgeIndices<'a> = Topology::EdgeIndices<'a> where Self: 'a;
+    type NodeIndices<'a>
+        = Topology::NodeIndices<'a>
+    where
+        Self: 'a;
+    type EdgeIndices<'a>
+        = Topology::EdgeIndices<'a>
+    where
+        Self: 'a;
     type NodeIndicesCopied = Topology::NodeIndicesCopied;
     type EdgeIndicesCopied = Topology::EdgeIndicesCopied;
 
@@ -308,9 +314,21 @@ impl<Topology: MutableGraphContainer + StaticGraph> MutableGraphContainer
 }
 
 impl<Topology: NavigableGraph> NavigableGraph for NodeBigraphWrapper<Topology> {
-    type OutNeighbors<'a> = <Topology as NavigableGraph>::OutNeighbors<'a> where Self: 'a, Topology: 'a;
-    type InNeighbors<'a> = <Topology as NavigableGraph>::InNeighbors<'a> where Self: 'a, Topology: 'a;
-    type EdgesBetween<'a> = <Topology as NavigableGraph>::EdgesBetween<'a> where Self: 'a, Topology: 'a;
+    type OutNeighbors<'a>
+        = <Topology as NavigableGraph>::OutNeighbors<'a>
+    where
+        Self: 'a,
+        Topology: 'a;
+    type InNeighbors<'a>
+        = <Topology as NavigableGraph>::InNeighbors<'a>
+    where
+        Self: 'a,
+        Topology: 'a;
+    type EdgesBetween<'a>
+        = <Topology as NavigableGraph>::EdgesBetween<'a>
+    where
+        Self: 'a,
+        Topology: 'a;
 
     fn out_neighbors(&self, node_id: Self::NodeIndex) -> Self::OutNeighbors<'_> {
         self.topology.out_neighbors(node_id)
